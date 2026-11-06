@@ -132,7 +132,7 @@ const withIdentity = <A, E, R>(
               input.legacyPathProbeError
                 ? Effect.fail(input.legacyPathProbeError)
                 : Effect.succeed(
-                    input.legacyPathExists === true && /Project Ares \((Alpha|Dev)\)/.test(path),
+                    input.legacyPathExists === true && /T3 Code \(Dev\)|t3code-v2/.test(path),
                   ),
             readFileString: () =>
               Effect.succeed(input.packageJson ?? '{"t3codeCommitHash":"abcdef1234567890"}'),
@@ -153,7 +153,7 @@ describe("DesktopAppIdentity", () => {
         const identity = yield* DesktopAppIdentity.DesktopAppIdentity;
         const userDataPath = yield* identity.resolveUserDataPath;
 
-        assert.equal(userDataPath, "/Users/alice/Library/Application Support/t3code-v2");
+        assert.equal(userDataPath, "/Users/alice/Library/Application Support/project-ares");
       }),
       { legacyPathExists: true },
     ),
@@ -165,7 +165,7 @@ describe("DesktopAppIdentity", () => {
         const identity = yield* DesktopAppIdentity.DesktopAppIdentity;
         assert.equal(
           yield* identity.resolveUserDataPath,
-          "/Users/alice/Library/Application Support/Project Ares (Dev)",
+          "/Users/alice/Library/Application Support/T3 Code (Dev)",
         );
       }),
       {
@@ -201,7 +201,10 @@ describe("DesktopAppIdentity", () => {
         assert.isDefined(runtimeName);
         assert.equal(runtimeName, `Project Ares ${stage}`);
         assert.match(runtimeName.replaceAll(" ", ""), /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/);
-        assert.equal(calls.setAboutPanelOptions[0]?.applicationName, `Project Ares (${stage})`);
+        assert.equal(
+          calls.setAboutPanelOptions[0]?.applicationName,
+          stage === "Beta" ? "Project Ares" : `Project Ares (${stage})`,
+        );
       }),
       { calls, environment },
     );

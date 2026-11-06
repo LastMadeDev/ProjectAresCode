@@ -168,6 +168,34 @@ const TARGETED = [
       },
     ],
   },
+  {
+    // Project removal dialog text, built in client-runtime (outside the generic rename).
+    file: "packages/client-runtime/src/state/projectRemoval.ts",
+    edits: [{ find: /deleted from T3 Code\./g, replace: `deleted from ${BRAND.name}.` }],
+  },
+  {
+    // Matches the Ares profile names (DesktopUserData rules) and the Beta display name.
+    file: "apps/desktop/src/app/DesktopAppIdentity.test.ts",
+    edits: [
+      {
+        // The generic rename runs first each pass, so this also matches its own earlier output.
+        find: /\/Project Ares \\\((?:\(Alpha\|Dev\)|Dev)\\\)(?:\|t3code-v2)?\/\.test\(path\)/,
+        replace: "/T3 Code \\(Dev\\)|t3code-v2/.test(path)",
+      },
+      {
+        find: /Application Support\/t3code-v2"/,
+        replace: `Application Support/${BRAND.userDataDir}"`,
+      },
+      {
+        find: /Application Support\/Project Ares \(Dev\)"/,
+        replace: 'Application Support/T3 Code (Dev)"',
+      },
+      {
+        find: /applicationName, `Project Ares \(\$\{stage\}\)`\)/,
+        replace: 'applicationName, stage === "Beta" ? "Project Ares" : `Project Ares (${stage})`)',
+      },
+    ],
+  },
   // A managed-update policy message the desktop app shows; built in contracts, checked by server tests.
   ...[
     "packages/contracts/src/managedPolicy.ts",
