@@ -13,10 +13,10 @@ const repoRoot = NodePath.resolve(desktopDir, "..", "..");
 const devBundleIdSuffix = NodePath.basename(repoRoot)
   .toLowerCase()
   .replaceAll(/[^a-z0-9]+/g, "");
-const APP_DISPLAY_NAME = isDevelopment ? "T3 Code (Dev)" : "T3 Code (Beta)";
+const APP_DISPLAY_NAME = isDevelopment ? "Project Ares (Dev)" : "Project Ares";
 const APP_BUNDLE_ID = isDevelopment
-  ? `com.t3tools.t3code.dev.${devBundleIdSuffix || "local"}`
-  : "com.t3tools.t3code";
+  ? `com.lastmade.projectares.dev.${devBundleIdSuffix || "local"}`
+  : "com.lastmade.projectares";
 const APP_PROTOCOL_SCHEMES = isDevelopment ? ["t3code-dev"] : ["t3code"];
 const LAUNCHER_VERSION = 20;
 const developmentMacIconPngPath = NodePath.join(
@@ -268,8 +268,9 @@ function resolveMacBundleInfoPlistStrings(executableName) {
     CFBundleExecutable: executableName,
     CFBundleIconFile: "icon.icns",
     NSScreenCaptureUsageDescription:
-      "T3 Code captures the active window when you use the snapshot shortcut.",
-    NSDocumentsFolderUsageDescription: "T3 Code reads project files you open in the desktop app.",
+      "Project Ares captures the active window when you use the snapshot shortcut.",
+    NSDocumentsFolderUsageDescription:
+      "Project Ares reads project files you open in the desktop app.",
   };
 }
 
