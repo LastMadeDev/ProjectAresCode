@@ -1,12 +1,55 @@
-import type { SVGProps } from "react";
+import { useId, type SVGProps } from "react";
 
+// Project Ares wordmark (helm + "ARES"). Owned by ares/overrides; ares/rebrand.mjs copies it.
 export function T3Wordmark(props: SVGProps<SVGSVGElement>) {
+  const maskId = `ares-helm-cut-${useId().replace(/:/g, "")}`;
   return (
-    <svg {...props} viewBox="15.5309 37 94.3941 56.96" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M33.4509 93V47.56H15.5309V37H64.3309V47.56H46.4109V93H33.4509ZM86.7253 93.96C82.832 93.96 78.9653 93.4533 75.1253 92.44C71.2853 91.3733 68.032 89.88 65.3653 87.96L70.4053 78.04C72.5386 79.5867 75.0186 80.8133 77.8453 81.72C80.672 82.6267 83.5253 83.08 86.4053 83.08C89.6586 83.08 92.2186 82.44 94.0853 81.16C95.952 79.88 96.8853 78.12 96.8853 75.88C96.8853 73.7467 96.0586 72.0667 94.4053 70.84C92.752 69.6133 90.0853 69 86.4053 69H80.4853V60.44L96.0853 42.76L97.5253 47.4H68.1653V37H107.365V45.4L91.8453 63.08L85.2853 59.32H89.0453C95.9253 59.32 101.125 60.8667 104.645 63.96C108.165 67.0533 109.925 71.0267 109.925 75.88C109.925 79.0267 109.099 81.9867 107.445 84.76C105.792 87.48 103.259 89.6933 99.8453 91.4C96.432 93.1067 92.0586 93.96 86.7253 93.96Z"
+    <svg {...props} viewBox="0 0 146 40" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+          <rect x="0" y="0" width="512" height="512" fill="var(--color-white)" />
+          <path
+            d="M224 96 L240 252 M288 96 L272 252"
+            stroke="var(--color-black)"
+            strokeWidth="12"
+          />
+          <path
+            d="M168 226 L244 250 L268 250 L344 226 L344 262 L284 318 L284 420 L228 420 L228 318 L168 262 Z"
+            fill="var(--color-black)"
+          />
+        </mask>
+      </defs>
+      <g transform="scale(0.10753) translate(-120 -60)">
+        <g className="text-primary" fill="currentColor">
+          <path
+            mask={`url(#${maskId})`}
+            d="M150 244 C150 176 196 128 256 124 C316 128 362 176 362 244 L356 330 L286 412 L226 412 L156 330 Z"
+          />
+          <path d="M230 94 L256 74 L282 94 L268 248 L244 248 Z" />
+        </g>
+        <g
+          className="text-foreground"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="square"
+        >
+          <path d="M214 260 L236 274 L214 288" />
+          <path d="M262 274 L300 274" />
+        </g>
+      </g>
+      <text
+        x="37"
+        y="40"
         fill="currentColor"
-      />
+        fontFamily="'Chakra Petch', Inter, system-ui, sans-serif"
+        fontSize="52"
+        fontWeight="600"
+        textLength="108"
+        lengthAdjust="spacingAndGlyphs"
+      >
+        ARES
+      </text>
     </svg>
   );
 }
