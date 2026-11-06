@@ -70,7 +70,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh workflow list --all --json id,path,state --jq '.[] | select(.state == "active") | select(.path | test("/ares-[^/]*\\.yml$") | not) | .id' |
+          gh workflow list --all --json id,path,state --jq '.[] | select(.state == "active") | select(.path | test("/ares-[^/]*[.]yml$") | not) | .id' |
             while read -r id; do gh workflow disable "$id" || true; done
 
       - name: Report a sync that needs a hand
