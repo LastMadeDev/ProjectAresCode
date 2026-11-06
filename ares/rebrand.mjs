@@ -154,6 +154,17 @@ const TARGETED = [
     ],
   },
   {
+    // The `t3` shim marker is an ownership key, not branding: Ares must recognize (and
+    // replace) a shim T3 Code wrote, and the reverse, or `t3` keeps the old app's path.
+    file: "apps/desktop/src/app/DesktopCliShim.ts",
+    edits: [
+      {
+        find: /"Written by Project Ares: runs the desktop app's bundled t3 CLI\."/,
+        replace: `"Written by T3 Code: runs the desktop app's bundled t3 CLI."`,
+      },
+    ],
+  },
+  {
     file: "apps/desktop/src/app/DesktopStartupRecovery.ts",
     edits: [
       {
