@@ -7,23 +7,33 @@ export function T3Wordmark(props: SVGProps<SVGSVGElement>) {
     <svg {...props} viewBox="0 0 146 40" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
-          <rect x="0" y="0" width="512" height="512" fill="#fff" />
-          <path d="M224 96 L240 252 M288 96 L272 252" stroke="#000" strokeWidth="12" />
+          <rect x="0" y="0" width="512" height="512" fill="var(--color-white)" />
+          <path
+            d="M224 96 L240 252 M288 96 L272 252"
+            stroke="var(--color-black)"
+            strokeWidth="12"
+          />
           <path
             d="M168 226 L244 250 L268 250 L344 226 L344 262 L284 318 L284 420 L228 420 L228 318 L168 262 Z"
-            fill="#000"
+            fill="var(--color-black)"
           />
         </mask>
       </defs>
       <g transform="scale(0.10753) translate(-120 -60)">
-        <g fill="#D94B46">
+        <g className="text-primary" fill="currentColor">
           <path
             mask={`url(#${maskId})`}
             d="M150 244 C150 176 196 128 256 124 C316 128 362 176 362 244 L356 330 L286 412 L226 412 L156 330 Z"
           />
           <path d="M230 94 L256 74 L282 94 L268 248 L244 248 Z" />
         </g>
-        <g fill="none" stroke="#F16A63" strokeWidth="12" strokeLinecap="square">
+        <g
+          className="text-foreground"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="square"
+        >
           <path d="M214 260 L236 274 L214 288" />
           <path d="M262 274 L300 274" />
         </g>
