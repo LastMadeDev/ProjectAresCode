@@ -248,7 +248,7 @@
             storedTheme === "dark" ||
             storedTheme === "system" ||
             themeModes !== null;
-          const theme = isKnownTheme && storedTheme ? storedTheme : "system";
+          const theme = isKnownTheme && storedTheme ? storedTheme : "dark";
           const isThemed = isKnownTheme && themeModes !== null;
           const baseAppearance = customTheme ? customTheme.appearance : "light";
           const systemMode = prefersDark ? "dark" : "light";
@@ -411,7 +411,7 @@
       }
 
       html.dark body {
-        background: #000000;
+        background: #0b0d12;
         color: #f5f5f5;
       }
 

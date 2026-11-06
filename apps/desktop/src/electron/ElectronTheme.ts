@@ -92,7 +92,9 @@ export const makeWith = Effect.fn("ElectronTheme.make")(function* (
 /** @public */
 export const make = Effect.gen(function* () {
   const platform = yield* HostProcess.Platform;
-  return yield* makeWith(platform === "linux" ? watchLinuxColorScheme : undefined);
+  const theme = yield* makeWith(platform === "linux" ? watchLinuxColorScheme : undefined);
+  yield* theme.setSource("dark").pipe(Effect.ignore);
+  return theme;
 });
 
 export const layer = Layer.effect(ElectronTheme, make);

@@ -270,7 +270,7 @@ export const listen: Effect.Effect<
           show: false,
           title: "Project Ares could not start",
           autoHideMenuBar: true,
-          backgroundColor: shouldUseDarkColors ? "#000000" : "#ffffff",
+          backgroundColor: shouldUseDarkColors ? "#0b0d12" : "#ffffff",
           webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,

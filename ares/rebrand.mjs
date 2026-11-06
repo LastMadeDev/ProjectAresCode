@@ -168,6 +168,67 @@ const TARGETED = [
       },
     ],
   },
+  // Project Ares opens dark. Electron keeps no theme between launches, so the window, the
+  // connecting splash and the startup error page followed the OS (white on light Windows)
+  // until the page reported its theme. A saved Light or System choice still applies.
+  {
+    file: "apps/desktop/src/electron/ElectronTheme.ts",
+    edits: [
+      {
+        find: /return yield\* makeWith\(platform === "linux" \? watchLinuxColorScheme : undefined\);/,
+        replace: [
+          'const theme = yield* makeWith(platform === "linux" ? watchLinuxColorScheme : undefined);',
+          '  yield* theme.setSource("dark").pipe(Effect.ignore);',
+          "  return theme;",
+        ].join("\n"),
+        done: (text) => text.includes('yield* theme.setSource("dark").pipe(Effect.ignore);'),
+      },
+    ],
+  },
+  {
+    file: "apps/web/src/hooks/useTheme.ts",
+    edits: [
+      {
+        find: /const DEFAULT_THEME_SNAPSHOT: ThemeSnapshot = \{\n\s+theme: "system",\n\s+resolvedTheme: "light",\n\s+systemDark: false,\n\s+followSystem: true,\n\s+appearanceMode: "system",/,
+        replace: [
+          "const DEFAULT_THEME_SNAPSHOT: ThemeSnapshot = {",
+          '  theme: "dark",',
+          '  resolvedTheme: "dark",',
+          "  systemDark: false,",
+          "  followSystem: false,",
+          '  appearanceMode: "dark",',
+        ].join("\n"),
+        done: (text) => /DEFAULT_THEME_SNAPSHOT: ThemeSnapshot = \{\n\s+theme: "dark",/.test(text),
+      },
+    ],
+  },
+  {
+    file: "apps/web/index.html",
+    edits: [
+      {
+        find: /const theme = isKnownTheme && storedTheme \? storedTheme : "system";/,
+        replace: 'const theme = isKnownTheme && storedTheme ? storedTheme : "dark";',
+      },
+      // Boot paint matches the ARES canvas, so the splash does not jump from black.
+      {
+        find: /(html\.dark body \{\n\s+background: )#000000;/,
+        replace: "$1#0b0d12;",
+        done: (text) => /html\.dark body \{\n\s+background: #0b0d12;/.test(text),
+      },
+    ],
+  },
+  ...[
+    "apps/desktop/src/window/DesktopWindow.ts",
+    "apps/desktop/src/app/DesktopStartupRecovery.ts",
+  ].map((file) => ({
+    file,
+    edits: [
+      {
+        find: /shouldUseDarkColors \? "#000000" : "#ffffff"/,
+        replace: 'shouldUseDarkColors ? "#0b0d12" : "#ffffff"',
+      },
+    ],
+  })),
   {
     // Project removal dialog text, built in client-runtime (outside the generic rename).
     file: "packages/client-runtime/src/state/projectRemoval.ts",
