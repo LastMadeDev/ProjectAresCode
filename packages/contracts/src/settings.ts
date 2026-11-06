@@ -1348,7 +1348,7 @@ export const ServerSettings = Schema.Struct({
   defaultTheme: DefaultThemePreference.pipe(Schema.withDecodingDefault(Effect.succeed("ares"))),
   /** Distinguishes repeated sets of the same theme so clients apply each one. */
   defaultThemeSetAt: Schema.String.check(Schema.isMaxLength(64)).pipe(
-    Schema.withDecodingDefault(Effect.succeed("")),
+    Schema.withDecodingDefault(Effect.succeed("ares-dark-1")),
   ),
   environmentIcon: ForwardCompatibleNullable(EnvironmentMachineKind).pipe(
     Schema.withDecodingDefault(Effect.succeed(null)),

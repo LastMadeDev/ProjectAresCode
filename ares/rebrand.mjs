@@ -24,6 +24,21 @@ export const BRAND = {
 
 const RELEASES_URL = `https://github.com/${BRAND.repository}/releases`;
 
+// Change to re-apply the default theme (and dark appearance) once on every client.
+const ARES_THEME_STAMP = "ares-dark-1";
+
+const ARES_BOOT_PALETTE = [
+  "          ares: {",
+  "            dark: {",
+  '              background: "#0b0d12",',
+  '              foreground: "#f4f5f7",',
+  '              accent: "#c9403b",',
+  '              chrome: "#0b0d12",',
+  "            },",
+  "          },",
+  "",
+].join("\n");
+
 // User-visible text only. Agent-facing text, the `t3` CLI, package names, env vars and
 // ~/.t3 stay upstream's: renaming them breaks compatibility and every merge.
 const UI_TEXT_FILES = [
@@ -153,6 +168,15 @@ const TARGETED = [
       },
     ],
   },
+  // A managed-update policy message the desktop app shows; built in contracts, checked by server tests.
+  ...[
+    "packages/contracts/src/managedPolicy.ts",
+    "apps/server/src/cli/update.test.ts",
+    "apps/server/src/cloud/selfUpdate.test.ts",
+  ].map((file) => ({
+    file,
+    edits: [{ find: /manages T3 Code updates/g, replace: `manages ${BRAND.name} updates` }],
+  })),
   {
     // The `t3` shim marker is an ownership key, not branding: Ares must recognize (and
     // replace) a shim T3 Code wrote, and the reverse, or `t3` keeps the old app's path.
@@ -224,6 +248,23 @@ const TARGETED = [
     ],
   },
   {
+    // Ares team kit buttons (AresKitActions.tsx, an Ares-only file) take the update button's
+    // place; that component still shows the update control when an update needs action.
+    file: "apps/web/src/components/sidebar/SidebarChrome.tsx",
+    edits: [
+      {
+        find: /import \{ SidebarUpdateArchitectureWarning, SidebarUpdatePill \} from "\.\/SidebarUpdatePill";/,
+        replace:
+          'import { SidebarUpdateArchitectureWarning } from "./SidebarUpdatePill";\nimport { AresKitActions } from "./AresKitActions";',
+        done: (text) => text.includes('import { AresKitActions } from "./AresKitActions";'),
+      },
+      {
+        find: /<SidebarUpdatePill \/>/,
+        replace: "<AresKitActions />",
+      },
+    ],
+  },
+  {
     file: "apps/web/src/components/onboarding/WelcomeWizard.tsx",
     edits: [
       {
@@ -281,33 +322,10 @@ const TARGETED = [
           /RESERVED_THEME_IDS: ReadonlySet<string> = new Set\(\[\n {2}"ares",/.test(text),
       },
       {
-        find: /export const BUILT_IN_THEMES: ReadonlyArray<ThemeDefinition> = \[/,
-        // Upstream's standard palette plus Ares overrides: new upstream roles are inherited.
-        replace: () =>
-          [
-            "const ARES_DARK_THEME_COLORS: ThemeColors = {",
-            "  ...T3_CODE_DARK_THEME_COLORS,",
-            ...Object.entries(DARK_THEME).map(([key, value]) => `  ${key}: "${value}",`),
-            "};",
-            "",
-            "const ARES_LIGHT_THEME_COLORS: ThemeColors = {",
-            "  ...T3_CODE_LIGHT_THEME_COLORS,",
-            ...Object.entries(LIGHT_THEME).map(([key, value]) => `  ${key}: "${value}",`),
-            "};",
-            "",
-            "export const ARES_THEME: ThemeDefinition = {",
-            '  id: "ares",',
-            `  label: "${BRAND.name}",`,
-            '  appearance: "dark",',
-            "  colors: ARES_DARK_THEME_COLORS,",
-            "  variants: { light: ARES_LIGHT_THEME_COLORS },",
-            "  sidebarArtwork: true,",
-            "};",
-            "",
-            "export const BUILT_IN_THEMES: ReadonlyArray<ThemeDefinition> = [",
-            "  ARES_THEME,",
-          ].join("\n"),
-        done: (text) => text.includes("export const ARES_THEME"),
+        // Matches upstream's list or an earlier generated block, so palette edits regenerate.
+        find: /(?:const ARES_DARK_THEME_COLORS[\s\S]*?)?export const BUILT_IN_THEMES: ReadonlyArray<ThemeDefinition> = \[(?:\n {2}ARES_THEME,)?/,
+        replace: () => ARES_THEME_BLOCK,
+        done: (text) => squash(text).includes(squash(ARES_THEME_BLOCK)),
       },
     ],
   },
@@ -358,6 +376,23 @@ const TARGETED = [
         find: /(defaultTheme: DefaultThemePreference\.pipe\(Schema\.withDecodingDefault\(Effect\.succeed\()""\)\)\)/,
         replace: '$1"ares")))',
         done: (text) => text.includes('withDecodingDefault(Effect.succeed("ares"))'),
+      },
+      {
+        // A new stamp makes clients that adopted an earlier ARES default apply it once more.
+        find: /(defaultThemeSetAt: Schema\.String\.check\(Schema\.isMaxLength\(64\)\)\.pipe\(\s*Schema\.withDecodingDefault\(Effect\.succeed\()"[^"]*"\)/,
+        replace: `$1"${ARES_THEME_STAMP}")`,
+        done: (text) => text.includes(`Effect.succeed("${ARES_THEME_STAMP}")`),
+      },
+    ],
+  },
+  {
+    // The pre-paint boot script needs the theme too, or ARES users see a light flash.
+    file: "apps/web/index.html",
+    edits: [
+      {
+        find: /(const BUILT_IN_THEME_PALETTES = \{\n)/,
+        replace: `$1${ARES_BOOT_PALETTE}`,
+        done: (text) => text.includes("ares: {\n            dark: {"),
       },
     ],
   },
@@ -440,16 +475,25 @@ const DARK_THEME = {
   terminalScrollbarHover: "#303642",
 };
 
-const LIGHT_THEME = {
-  focus: "#c9403b",
-  accent: "#c9403b",
-  update: "#c9403b",
-  updateForeground: "#c9403b",
-  updateSurface: "#fbeaea",
-  messageAction: "#c9403b",
-  messageActionHover: "#d94b46",
-  terminalCursor: "#c9403b",
-};
+// Dark only: adopting a single-appearance default theme also switches the app to dark.
+// Upstream's standard palette is inherited, so new upstream color roles just work.
+const ARES_THEME_BLOCK = [
+  "const ARES_DARK_THEME_COLORS: ThemeColors = {",
+  "  ...T3_CODE_DARK_THEME_COLORS,",
+  ...Object.entries(DARK_THEME).map(([key, value]) => `  ${key}: "${value}",`),
+  "};",
+  "",
+  "export const ARES_THEME: ThemeDefinition = {",
+  '  id: "ares",',
+  `  label: "${BRAND.name}",`,
+  '  appearance: "dark",',
+  "  colors: ARES_DARK_THEME_COLORS,",
+  "  sidebarArtwork: true,",
+  "};",
+  "",
+  "export const BUILT_IN_THEMES: ReadonlyArray<ThemeDefinition> = [",
+  "  ARES_THEME,",
+].join("\n");
 
 // Sidebar artwork gradients (apps/web/src/index.css), retinted from blue to crimson.
 // [variable, occurrence (0 = light/base, 1 = dark variant), value]

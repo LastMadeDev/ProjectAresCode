@@ -970,24 +970,11 @@ const ARES_DARK_THEME_COLORS: ThemeColors = {
   terminalScrollbarHover: "#303642",
 };
 
-const ARES_LIGHT_THEME_COLORS: ThemeColors = {
-  ...T3_CODE_LIGHT_THEME_COLORS,
-  focus: "#c9403b",
-  accent: "#c9403b",
-  update: "#c9403b",
-  updateForeground: "#c9403b",
-  updateSurface: "#fbeaea",
-  messageAction: "#c9403b",
-  messageActionHover: "#d94b46",
-  terminalCursor: "#c9403b",
-};
-
 export const ARES_THEME: ThemeDefinition = {
   id: "ares",
   label: "Project Ares",
   appearance: "dark",
   colors: ARES_DARK_THEME_COLORS,
-  variants: { light: ARES_LIGHT_THEME_COLORS },
   sidebarArtwork: true,
 };
 
