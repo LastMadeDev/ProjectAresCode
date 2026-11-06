@@ -1,0 +1,107 @@
+name: Ares upstream sync
+
+# Merges upstream T3 Code into Project Ares every day. Brand-only conflicts resolve
+# themselves (ares/sync.mjs); a real conflict or a stale brand rule opens an issue instead.
+# A clean merge then starts the Ares release, unless the repository variable
+# ARES_AUTO_RELEASE is "false".
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Upstream ref to merge (default: main)"
+        required: false
+        default: main
+      release:
+        description: "Start an Ares release after a clean merge"
+        type: boolean
+        default: true
+
+concurrency:
+  group: ares-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+jobs:
+  sync:
+    name: Merge upstream
+    if: github.repository != 'pingdotgg/t3code'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      # Dependencies give ares/rebrand.mjs the repo formatter, and install the pre-commit
+      # hook, so a sync commit passes the same format, lint and knip checks as any other.
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-ci-deps
+
+      - name: Merge upstream
+        id: merge
+        shell: bash
+        run: |
+          git config user.name "ares-sync[bot]"
+          git config user.email "ares-sync@users.noreply.github.com"
+          before="$(git rev-parse HEAD)"
+          set +e
+          node ares/sync.mjs --push --ref "${{ inputs.ref || 'main' }}" 2>&1 | tee "$RUNNER_TEMP/sync.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [[ "$(git rev-parse HEAD)" != "$before" && $status -eq 0 ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      # Upstream's workflows target their own runners and secrets. Keep only Ares workflows
+      # enabled; this also catches workflows upstream adds later.
+      - name: Disable upstream workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh workflow list --all --json id,path,state --jq '.[] | select(.state == "active") | select(.path | test("/ares-[^/]*\\.yml$") | not) | .id' |
+            while read -r id; do gh workflow disable "$id" || true; done
+
+      - name: Report a sync that needs a hand
+        if: steps.merge.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          title="Upstream sync needs a hand"
+          {
+            echo "The daily merge of upstream T3 Code stopped (exit ${{ steps.merge.outputs.status }})."
+            echo
+            echo "Run locally: \`node ares/sync.mjs\`, fix what it lists, then \`node ares/rebrand.mjs && git add -A && git commit --no-edit && git push\`."
+            echo "See ARES.md for what each exit code means."
+            echo
+            echo '```'
+            tail -n 60 "$RUNNER_TEMP/sync.log"
+            echo '```'
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > "$RUNNER_TEMP/body.md"
+          existing="$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')"
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh issue create --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi
+          exit 1
+
+      - name: Start release
+        if: steps.merge.outputs.merged == 'true' && vars.ARES_AUTO_RELEASE != 'false' && (github.event_name == 'schedule' || inputs.release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ares-release.yml --ref "${{ github.ref_name }}"
