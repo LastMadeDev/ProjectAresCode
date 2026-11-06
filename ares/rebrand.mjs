@@ -136,6 +136,24 @@ const TARGETED = [
     ],
   },
   {
+    // The staged package name picks the Windows install folder; "t3code" would install Ares
+    // over T3 Code. Author is the publisher shown in Windows' installed apps list.
+    file: "scripts/build-desktop-artifact.ts",
+    edits: [
+      {
+        find: /(const stagePackageJson: StagePackageJson = \{\n\s+name: )"t3code",/,
+        replace: '$1"project-ares",',
+        done: (text) =>
+          /const stagePackageJson: StagePackageJson = \{\s+name: "project-ares",/.test(text),
+      },
+      {
+        find: /homepage: "https:\/\/t3\.codes",(\s+)author: "T3 Tools",/,
+        replace: `homepage: "https://github.com/${BRAND.repository}",$1author: "LastMadeDev",`,
+        done: (text) => text.includes('author: "LastMadeDev",'),
+      },
+    ],
+  },
+  {
     file: "apps/desktop/src/app/DesktopStartupRecovery.ts",
     edits: [
       {
