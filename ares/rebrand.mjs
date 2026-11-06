@@ -508,6 +508,7 @@ export const ASSET_TARGETS = new Set([...Object.keys(ICONS), ...OVERRIDE_FILES])
 /** Text with formatting noise removed, for "is this already applied" and sync comparisons. */
 export function squash(text) {
   return text
+    .replace(/\{\s*(["'])\s*\1\s*\}/g, " ")
     .replace(/,(\s*[)\]}>])/g, "$1")
     .replace(/[()]/g, "")
     .replace(/\s+/g, "")
